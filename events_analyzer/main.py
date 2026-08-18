@@ -7,6 +7,7 @@ import time
 from datetime import datetime, timedelta
 
 from .config import load_config
+from .notifier import EmailDeliveryError
 from .pipeline import build_report, can_deliver_report, deliver_report, run_scan, write_report
 
 
@@ -74,8 +75,12 @@ def main(argv: list[str] | None = None) -> int:
             print(f"No items found. Report saved to {report_path}.")
             return 0
         if can_deliver_report(config):
-            deliver_report(config, report)
-            print(f"Sent digest with {len(items)} items.")
+            try:
+                deliver_report(config, report)
+                print(f"Sent digest with {len(items)} items.")
+            except EmailDeliveryError as exc:
+                print(f"Digest generated with {len(items)} items, but sending failed: {exc}")
+                print(f"Report saved to {report_path}.")
         else:
             print(
                 f"Digest generated with {len(items)} items but e-mail is not configured. "
@@ -129,8 +134,11 @@ def _run_cycle(config) -> None:
     report, items = build_report(config)
     write_report(config, report)
     if items and config.from_email and config.to_email and config.smtp_host:
-        deliver_report(config, report)
-        print(f"Digest sent with {len(items)} items.")
+        try:
+            deliver_report(config, report)
+            print(f"Digest sent with {len(items)} items.")
+        except EmailDeliveryError as exc:
+            print(f"Digest ready with {len(items)} items, but sending failed: {exc}")
     else:
         print(f"Digest ready with {len(items)} items.")
 

@@ -1,6 +1,25 @@
 {
   "sources": [
     {
+      "name": "Blog do Google Brasil",
+      "url": "https://blog.google/intl/pt-br/feed/",
+      "parser": "rss",
+      "kind": "outro",
+      "region": "nacional",
+      "country": "BR"
+    },
+    {
+      "name": "Porto Digital - Noticias",
+      "url": "https://www.portodigital.org/noticias",
+      "parser": "html",
+      "kind": "outro",
+      "region": "nacional",
+      "country": "BR",
+      "item_selector": "a[href*='/noticias/']",
+      "link_selector": "a",
+      "summary_selector": ""
+    },
+    {
       "name": "Hacker News",
       "url": "https://news.ycombinator.com/rss",
       "parser": "rss",

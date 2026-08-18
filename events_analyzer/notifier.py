@@ -4,6 +4,10 @@ import smtplib
 from email.message import EmailMessage
 
 
+class EmailDeliveryError(RuntimeError):
+    """Raised when SMTP delivery fails."""
+
+
 def send_email(
     subject: str,
     body: str,
@@ -28,9 +32,13 @@ def send_email(
     message.set_content(body)
 
     with smtplib.SMTP(smtp_host, smtp_port, timeout=30) as client:
-        if use_tls:
-            client.starttls()
-        if smtp_user:
-            client.login(smtp_user, smtp_password)
-        client.send_message(message)
-
+        try:
+            if use_tls:
+                client.starttls()
+            if smtp_user:
+                client.login(smtp_user, smtp_password)
+            client.send_message(message)
+        except smtplib.SMTPException as exc:
+            raise EmailDeliveryError(f"SMTP delivery failed: {exc}") from exc
+        except OSError as exc:
+            raise EmailDeliveryError(f"Network error while sending e-mail: {exc}") from exc
